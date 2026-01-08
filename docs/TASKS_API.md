@@ -61,7 +61,7 @@ Tasks belong to a **single project** and cannot be part of multiple projects. Ea
 | Create task | Project members |
 | View tasks | Project members |
 | Update task | Project members |
-| Delete task | **Project owner only** |
+| Delete task | **Task creator or Admin** |
 
 ### Comments
 
@@ -298,7 +298,7 @@ curl -X PATCH http://localhost:8000/api/v1/projects/{projectId}/tasks/{taskId} \
 ## 5. Delete Task
 
 **Endpoint**: `DELETE /projects/:projectId/tasks/:taskId`  
-**Auth**: Required (**Project owner only**)
+**Auth**: Required (**Task creator or Admin only**)
 
 ### Request
 
@@ -315,6 +315,13 @@ curl -X DELETE http://localhost:8000/api/v1/projects/{projectId}/tasks/{taskId} 
   "message": "Task and its comments deleted successfully"
 }
 ```
+
+### Errors
+
+| Code | Message |
+|------|---------|
+| 403 | Only the task creator or an admin can delete this task |
+| 404 | Task not found |
 
 > **Note**: Deleting a task also deletes all its comments.
 

@@ -12,7 +12,7 @@ router.post('/projects/:projectId/tasks', requireMember, taskController.createTa
 router.get('/projects/:projectId/tasks', requireMember, taskController.getTasks);
 router.get('/projects/:projectId/tasks/:taskId', requireMember, taskController.getTask);
 router.patch('/projects/:projectId/tasks/:taskId', requireMember, taskController.updateTask);
-router.delete('/projects/:projectId/tasks/:taskId', requireOwner, taskController.deleteTask);
+router.delete('/projects/:projectId/tasks/:taskId', requireMember, taskController.deleteTask);
 
 // Comment routes
 router.post('/tasks/:taskId/comments', loadUser, taskController.addComment);

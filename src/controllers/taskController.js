@@ -146,6 +146,27 @@ const updateTask = async (req, res) => {
 const deleteTask = async (req, res) => {
     try {
         const { projectId, taskId } = req.params;
+
+        // Get task to check creator
+        const task = await taskService.getTaskById(taskId);
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                message: 'Task not found'
+            });
+        }
+
+        // Check if user is admin or task creator
+        const isAdmin = req.user.role === 'ADMIN';
+        const isCreator = task.createdBy._id.equals(req.user._id);
+
+        if (!isAdmin && !isCreator) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only the task creator or an admin can delete this task'
+            });
+        }
+
         await taskService.deleteTask(taskId);
 
         // Emit real-time update
