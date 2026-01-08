@@ -37,6 +37,20 @@ const authenticate = async (req, res, next) => {
     }
 };
 
+const loadUser = async (req, res, next) => {
+    const user = await userService.getUserByIdpId(req.auth.userId);
+
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            message: 'User not found'
+        });
+    }
+
+    req.user = user;
+    next();
+};
+
 const requireAdmin = async (req, res, next) => {
     const user = await userService.getUserByIdpId(req.auth.userId);
 
@@ -58,4 +72,4 @@ const requireAdmin = async (req, res, next) => {
     next();
 };
 
-module.exports = { authenticate, requireAdmin };
+module.exports = { authenticate, loadUser, requireAdmin };
