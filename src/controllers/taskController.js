@@ -51,11 +51,13 @@ const createTask = async (req, res) => {
 
 const getTasks = async (req, res) => {
     try {
-        const tasks = await taskService.getTasksByProject(req.params.projectId);
+        const { cursor, limit } = req.query;
+        const result = await taskService.getTasksByProject(req.params.projectId, { cursor, limit });
 
         return res.status(200).json({
             success: true,
-            tasks
+            tasks: result.data,
+            pagination: result.pagination
         });
     } catch (error) {
         return res.status(500).json({
@@ -185,11 +187,13 @@ const addComment = async (req, res) => {
 
 const getComments = async (req, res) => {
     try {
-        const comments = await commentService.getCommentsByTask(req.params.taskId);
+        const { cursor, limit } = req.query;
+        const result = await commentService.getCommentsByTask(req.params.taskId, { cursor, limit });
 
         return res.status(200).json({
             success: true,
-            comments
+            comments: result.data,
+            pagination: result.pagination
         });
     } catch (error) {
         return res.status(500).json({

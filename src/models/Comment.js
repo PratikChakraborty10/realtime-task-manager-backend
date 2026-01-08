@@ -20,6 +20,7 @@ const commentSchema = new mongoose.Schema({
     timestamps: true
 });
 
-commentSchema.index({ task: 1 });
+// Index for pagination (oldest first)
+commentSchema.index({ task: 1, createdAt: 1 });
 
 module.exports = mongoose.model('Comment', commentSchema);

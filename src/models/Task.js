@@ -33,7 +33,9 @@ const taskSchema = new mongoose.Schema({
     timestamps: true
 });
 
-taskSchema.index({ project: 1 });
-taskSchema.index({ assignee: 1 });
+// Indexes for fast retrieval and pagination
+taskSchema.index({ project: 1, createdAt: -1 });
+taskSchema.index({ project: 1, status: 1 });
+taskSchema.index({ assignee: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Task', taskSchema);

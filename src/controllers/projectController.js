@@ -34,12 +34,14 @@ const createProject = async (req, res) => {
 
 const getProjects = async (req, res) => {
     try {
+        const { cursor, limit } = req.query;
         const user = await userService.getUserByIdpId(req.auth.userId);
-        const projects = await projectService.getProjectsByUser(user._id);
+        const result = await projectService.getProjectsByUser(user._id, { cursor, limit });
 
         return res.status(200).json({
             success: true,
-            projects
+            projects: result.data,
+            pagination: result.pagination
         });
     } catch (error) {
         return res.status(500).json({
