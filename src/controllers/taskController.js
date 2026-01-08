@@ -2,6 +2,7 @@ const taskService = require('../services/taskService');
 const commentService = require('../services/commentService');
 const projectService = require('../services/projectService');
 const userService = require('../services/userService');
+const { emitTaskCreated, emitTaskUpdated, emitTaskDeleted, emitCommentCreated, emitCommentUpdated, emitCommentDeleted } = require('../socket/emitter');
 
 // Task Controllers
 
@@ -35,6 +36,9 @@ const createTask = async (req, res) => {
             project: projectId,
             createdBy: req.user._id
         });
+
+        // Emit real-time update
+        emitTaskCreated(projectId, task);
 
         return res.status(201).json({
             success: true,
@@ -123,6 +127,9 @@ const updateTask = async (req, res) => {
             });
         }
 
+        // Emit real-time update
+        emitTaskUpdated(projectId, task);
+
         return res.status(200).json({
             success: true,
             message: 'Task updated successfully',
@@ -138,7 +145,11 @@ const updateTask = async (req, res) => {
 
 const deleteTask = async (req, res) => {
     try {
-        await taskService.deleteTask(req.params.taskId);
+        const { projectId, taskId } = req.params;
+        await taskService.deleteTask(taskId);
+
+        // Emit real-time update
+        emitTaskDeleted(projectId, taskId);
 
         return res.status(200).json({
             success: true,
@@ -171,6 +182,9 @@ const addComment = async (req, res) => {
             task: taskId,
             createdBy: req.user._id
         });
+
+        // Emit real-time update
+        emitCommentCreated(taskId, comment);
 
         return res.status(201).json({
             success: true,
@@ -225,6 +239,9 @@ const updateComment = async (req, res) => {
 
         const comment = await commentService.updateComment(commentId, content);
 
+        // Emit real-time update
+        emitCommentUpdated(comment.task.toString(), comment);
+
         return res.status(200).json({
             success: true,
             message: 'Comment updated successfully',
@@ -242,6 +259,7 @@ const deleteComment = async (req, res) => {
     try {
         const { commentId } = req.params;
 
+        const comment = await commentService.getCommentById(commentId);
         const isAuthor = await commentService.isCommentAuthor(commentId, req.user._id);
         if (!isAuthor) {
             return res.status(403).json({
@@ -250,7 +268,11 @@ const deleteComment = async (req, res) => {
             });
         }
 
+        const taskId = comment.task.toString();
         await commentService.deleteComment(commentId);
+
+        // Emit real-time update
+        emitCommentDeleted(taskId, commentId);
 
         return res.status(200).json({
             success: true,

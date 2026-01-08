@@ -1,10 +1,18 @@
+const http = require('http');
 const app = require('./app');
 const connectWithDb = require('./src/config/db');
-require("dotenv").config()
+const { initSocket } = require('./src/config/socket');
+require("dotenv").config();
 
 // Connect with database
-connectWithDb()
+connectWithDb();
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running on port: ${process.env.PORT}`)
-})
+// Create HTTP server
+const server = http.createServer(app);
+
+// Initialize Socket.io
+initSocket(server);
+
+server.listen(process.env.PORT, () => {
+    console.log(`Server is running on port: ${process.env.PORT}`);
+});
