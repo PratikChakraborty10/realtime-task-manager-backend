@@ -105,6 +105,18 @@ const searchSchema = z.object({
     limit: z.string().optional().transform(val => val ? parseInt(val) : 10)
 });
 
+const getProjectsSchema = z.object({
+    status: ProjectStatusEnum.optional(),
+
+    sortBy: z.enum(['createdAt', 'updatedAt']).optional(),
+
+    sortOrder: z.enum(['asc', 'desc']).optional(),
+
+    cursor: z.string().optional(),
+
+    limit: z.string().optional().transform(val => val ? parseInt(val) : 10)
+});
+
 module.exports = {
     // Enums
     GenderEnum,
@@ -117,6 +129,7 @@ module.exports = {
     createProjectSchema,
     updateProjectSchema,
     addMemberSchema,
+    getProjectsSchema,
     // Task
     createTaskSchema,
     updateTaskSchema,

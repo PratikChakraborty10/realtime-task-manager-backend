@@ -27,9 +27,14 @@ const createProject = async (req, res) => {
 
 const getProjects = async (req, res) => {
     try {
-        const { cursor, limit } = req.query;
-        const user = await userService.getUserByIdpId(req.auth.userId);
-        const result = await projectService.getProjectsByUser(user._id, { cursor, limit });
+        const { cursor, limit, status, sortBy, sortOrder } = req.query;
+        const result = await projectService.getProjectsByUser(req.user._id, {
+            cursor,
+            limit,
+            status,
+            sortBy,
+            sortOrder
+        });
 
         return res.status(200).json({
             success: true,

@@ -1,17 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const projectController = require('../controllers/projectController');
-const { authenticate, requireAdmin } = require('../middleware/auth');
+const { authenticate, requireAdmin, loadUser } = require('../middleware/auth');
 const { requireOwner, requireMember } = require('../middleware/projectAuth');
 const { validate } = require('../middleware/validate');
-const { createProjectSchema, updateProjectSchema, addMemberSchema } = require('../validators/schemas');
+const { createProjectSchema, updateProjectSchema, addMemberSchema, getProjectsSchema } = require('../validators/schemas');
 
 // All routes require authentication
 router.use(authenticate);
 
 // Project CRUD
 router.post('/', requireAdmin, validate(createProjectSchema), projectController.createProject);
-router.get('/', projectController.getProjects);
+router.get('/', loadUser, validate(getProjectsSchema, 'query'), projectController.getProjects);
 router.get('/:id', requireMember, projectController.getProject);
 router.patch('/:id', requireOwner, validate(updateProjectSchema), projectController.updateProject);
 router.delete('/:id', requireOwner, projectController.deleteProject);

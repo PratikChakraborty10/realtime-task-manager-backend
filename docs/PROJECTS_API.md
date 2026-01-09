@@ -55,6 +55,41 @@ These indexes ensure fast retrieval when listing projects for a user.
 
 All list endpoints use **cursor-based pagination** for optimal performance with large datasets.
 
+### Get Projects
+Retrieve a list of projects the user is a member of or created.
+
+**URL** : `/api/v1/projects`
+
+**Method** : `GET`
+
+**Auth Required** : Yes
+
+**Query Parameters**:
+- `limit` (optional): Number of items per page (default: 20)
+- `cursor` (optional): ID of the last item from previous page (for pagination)
+- `status` (optional): Filter by status (`ACTIVE`, `ON_HOLD`, `COMPLETED`, `ARCHIVED`)
+- `sortBy` (optional): Sort field (`createdAt` [default], `updatedAt`)
+- `sortOrder` (optional): Sort direction (`desc` [default], `asc`)
+
+**Example Request**:
+```bash
+GET /api/v1/projects?limit=10&status=ACTIVE&sortBy=updatedAt
+```
+
+**Success Response** :
+
+**Code** : `200 OK`
+```json
+{
+  "success": true,
+  "projects": [...],
+  "pagination": {
+    "hasMore": true,
+    "nextCursor": "507f1f77bcf86cd799439011"
+  }
+}
+```
+
 ### Query Parameters
 
 | Parameter | Type | Default | Max | Description |
