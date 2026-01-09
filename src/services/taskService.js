@@ -54,8 +54,10 @@ const updateTask = async (taskId, updates) => {
 };
 
 const deleteTask = async (taskId) => {
-    await Comment.deleteMany({ task: taskId });
-    return Task.findByIdAndDelete(taskId);
+    // Soft delete: Mark task as deleted instead of removing
+    // Also soft delete all related comments
+    await Comment.updateMany({ task: taskId }, { deletedAt: new Date() });
+    return Task.findByIdAndUpdate(taskId, { deletedAt: new Date() });
 };
 
 module.exports = {

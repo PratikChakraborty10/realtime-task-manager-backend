@@ -28,6 +28,10 @@ const taskSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    deletedAt: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true
@@ -41,4 +45,10 @@ taskSchema.index({ assignee: 1, createdAt: -1 });
 // Text index for search
 taskSchema.index({ title: 'text', description: 'text' });
 
+// Soft delete middleware
+taskSchema.pre(/^find/, function () {
+    this.where({ deletedAt: null });
+});
+
 module.exports = mongoose.model('Task', taskSchema);
+

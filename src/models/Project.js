@@ -23,6 +23,10 @@ const projectSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    deletedAt: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true
@@ -35,4 +39,10 @@ projectSchema.index({ members: 1, createdAt: -1 });
 // Text index for search
 projectSchema.index({ name: 'text', description: 'text' });
 
+// Soft delete middleware - exclude deleted records from all find queries
+projectSchema.pre(/^find/, function () {
+    this.where({ deletedAt: null });
+});
+
 module.exports = mongoose.model('Project', projectSchema);
+

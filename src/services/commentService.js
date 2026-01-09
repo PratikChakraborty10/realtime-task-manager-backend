@@ -44,7 +44,7 @@ const updateComment = async (commentId, content) => {
 };
 
 const deleteComment = async (commentId) => {
-    return Comment.findByIdAndDelete(commentId);
+    return Comment.findByIdAndUpdate(commentId, { deletedAt: new Date() });
 };
 
 const isCommentAuthor = async (commentId, userId) => {

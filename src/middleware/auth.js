@@ -38,17 +38,24 @@ const authenticate = async (req, res, next) => {
 };
 
 const loadUser = async (req, res, next) => {
-    const user = await userService.getUserByIdpId(req.auth.userId);
+    try {
+        const user = await userService.getUserByIdpId(req.auth.userId);
 
-    if (!user) {
-        return res.status(401).json({
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        req.user = user;
+        next();
+    } catch (error) {
+        return res.status(500).json({
             success: false,
-            message: 'User not found'
+            message: error.message
         });
     }
-
-    req.user = user;
-    next();
 };
 
 const requireAdmin = async (req, res, next) => {

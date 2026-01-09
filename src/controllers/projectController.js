@@ -43,6 +43,7 @@ const getProjects = async (req, res) => {
             pagination: result.pagination
         });
     } catch (error) {
+        console.error('getProjects error:', error);
         return res.status(500).json({
             success: false,
             message: error.message

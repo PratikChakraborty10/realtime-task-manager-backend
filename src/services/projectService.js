@@ -110,7 +110,7 @@ const updateProject = async (projectId, updates) => {
 };
 
 const deleteProject = async (projectId) => {
-    return Project.findByIdAndDelete(projectId);
+    return Project.findByIdAndUpdate(projectId, { deletedAt: new Date() });
 };
 
 const addMember = async (projectId, userId) => {
