@@ -5,13 +5,6 @@ const createProject = async (req, res) => {
     try {
         const { name, description } = req.body;
 
-        if (!name) {
-            return res.status(400).json({
-                success: false,
-                message: 'Project name is required'
-            });
-        }
-
         // req.user is set by requireAdmin middleware
         const project = await projectService.createProject({
             name,
@@ -117,13 +110,6 @@ const deleteProject = async (req, res) => {
 const addMember = async (req, res) => {
     try {
         const { userId } = req.body;
-
-        if (!userId) {
-            return res.status(400).json({
-                success: false,
-                message: 'User ID is required'
-            });
-        }
 
         // Check if user exists in the platform
         const userToAdd = await userService.getUserById(userId);

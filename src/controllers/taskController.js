@@ -11,13 +11,6 @@ const createTask = async (req, res) => {
         const { title, description, assignee } = req.body;
         const { projectId } = req.params;
 
-        if (!title) {
-            return res.status(400).json({
-                success: false,
-                message: 'Task title is required'
-            });
-        }
-
         // Validate assignee is a project member
         if (assignee) {
             const isMember = await projectService.isProjectMember(projectId, assignee);
@@ -191,13 +184,6 @@ const addComment = async (req, res) => {
         const { content } = req.body;
         const { taskId } = req.params;
 
-        if (!content) {
-            return res.status(400).json({
-                success: false,
-                message: 'Comment content is required'
-            });
-        }
-
         const comment = await commentService.createComment({
             content,
             task: taskId,
@@ -242,13 +228,6 @@ const updateComment = async (req, res) => {
     try {
         const { content } = req.body;
         const { commentId } = req.params;
-
-        if (!content) {
-            return res.status(400).json({
-                success: false,
-                message: 'Comment content is required'
-            });
-        }
 
         const isAuthor = await commentService.isCommentAuthor(commentId, req.user._id);
         if (!isAuthor) {

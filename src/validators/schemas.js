@@ -1,0 +1,115 @@
+const { z } = require('zod');
+
+// ============ ENUMS ============
+
+const GenderEnum = z.enum(['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY'], {
+    errorMap: () => ({ message: 'Gender must be one of: MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY' })
+});
+
+const ProjectStatusEnum = z.enum(['ACTIVE', 'ON_HOLD', 'COMPLETED', 'ARCHIVED'], {
+    errorMap: () => ({ message: 'Status must be one of: ACTIVE, ON_HOLD, COMPLETED, ARCHIVED' })
+});
+
+const TaskStatusEnum = z.enum(['OPEN', 'IN_PROGRESS', 'ON_HOLD', 'CLOSED'], {
+    errorMap: () => ({ message: 'Status must be one of: OPEN, IN_PROGRESS, ON_HOLD, CLOSED' })
+});
+
+// ============ USER SCHEMAS ============
+
+const signupSchema = z.object({
+    name: z.string({
+        required_error: 'Name is required'
+    }).min(1, 'Name is required').trim(),
+
+    gender: GenderEnum,
+
+    email: z.string({
+        required_error: 'Email is required'
+    }).email('Invalid email format'),
+
+    password: z.string({
+        required_error: 'Password is required'
+    }).min(6, 'Password must be at least 6 characters')
+});
+
+const loginSchema = z.object({
+    email: z.string({
+        required_error: 'Email is required'
+    }).email('Invalid email format'),
+
+    password: z.string({
+        required_error: 'Password is required'
+    }).min(1, 'Password is required')
+});
+
+// ============ PROJECT SCHEMAS ============
+
+const createProjectSchema = z.object({
+    name: z.string({
+        required_error: 'Project name is required'
+    }).min(1, 'Project name is required').trim(),
+
+    description: z.string().trim().optional()
+});
+
+const updateProjectSchema = z.object({
+    name: z.string().min(1, 'Project name cannot be empty').trim().optional(),
+    description: z.string().trim().optional(),
+    status: ProjectStatusEnum.optional()
+}).refine(data => Object.keys(data).length > 0, {
+    message: 'At least one field is required for update'
+});
+
+const addMemberSchema = z.object({
+    userId: z.string({
+        required_error: 'User ID is required'
+    }).min(1, 'User ID is required')
+});
+
+// ============ TASK SCHEMAS ============
+
+const createTaskSchema = z.object({
+    title: z.string({
+        required_error: 'Task title is required'
+    }).min(1, 'Task title is required').trim(),
+
+    description: z.string().trim().optional(),
+
+    assignee: z.string().optional()
+});
+
+const updateTaskSchema = z.object({
+    title: z.string().min(1, 'Task title cannot be empty').trim().optional(),
+    description: z.string().trim().optional(),
+    status: TaskStatusEnum.optional(),
+    assignee: z.string().nullable().optional()
+}).refine(data => Object.keys(data).length > 0, {
+    message: 'At least one field is required for update'
+});
+
+// ============ COMMENT SCHEMAS ============
+
+const commentSchema = z.object({
+    content: z.string({
+        required_error: 'Comment content is required'
+    }).min(1, 'Comment content is required').trim()
+});
+
+module.exports = {
+    // Enums
+    GenderEnum,
+    ProjectStatusEnum,
+    TaskStatusEnum,
+    // User
+    signupSchema,
+    loginSchema,
+    // Project
+    createProjectSchema,
+    updateProjectSchema,
+    addMemberSchema,
+    // Task
+    createTaskSchema,
+    updateTaskSchema,
+    // Comment
+    commentSchema
+};
