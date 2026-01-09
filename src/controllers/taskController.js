@@ -2,6 +2,7 @@ const taskService = require('../services/taskService');
 const commentService = require('../services/commentService');
 const projectService = require('../services/projectService');
 const userService = require('../services/userService');
+const Task = require('../models/Task');
 const { emitTaskCreated, emitTaskUpdated, emitTaskDeleted, emitCommentCreated, emitCommentUpdated, emitCommentDeleted } = require('../socket/emitter');
 
 // Task Controllers
@@ -138,10 +139,21 @@ const updateTask = async (req, res) => {
 
 const deleteTask = async (req, res) => {
     try {
-        const { projectId, taskId } = req.params;
+        const { taskId } = req.params;
+        const userId = req.user._id;
+        const userRole = req.user.role;
 
-        // Get task to check creator
-        const task = await taskService.getTaskById(taskId);
+        // Get task and populate project to check project owner
+        // We need direct access to Task model here for population if service doesn't support it
+        // Or we can assume taskService.getTaskById populates project? 
+        // Let's rely on taskService.getTaskById but we need to check if it populates project.createdBy
+        // If not, we might need to modify service or fetch manually.
+        // Assuming taskService.getTaskById populates project correctly based on previous context.
+        // Actually, let's use the Task model directly to be safe and efficient if imported.
+        // But Task model is not imported in this file. Let's use taskService for now.
+
+        let task = await taskService.getTaskById(taskId);
+
         if (!task) {
             return res.status(404).json({
                 success: false,
@@ -149,25 +161,36 @@ const deleteTask = async (req, res) => {
             });
         }
 
-        // Check if user is admin or task creator
-        const isAdmin = req.user.role === 'ADMIN';
-        const isCreator = task.createdBy._id.equals(req.user._id);
+        // We need to fetch the project to check its creator if it's not populated deep enough
+        // task.project might be just ID or Object.
+        // Let's assume we need to verify project ownership.
 
-        if (!isAdmin && !isCreator) {
+        // For robustness, let's just use the Task model to create a specific query
+
+        task = await Task.findById(taskId).populate('project');
+
+        if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
+
+        const isProjectManager = task.project && task.project.createdBy.equals(userId);
+        const isTaskCreator = task.createdBy.equals(userId); // task.createdBy is ObjectId because we didn't populate it or we did? 
+        // If using Task.findById(taskId).populate('project'), createdBy is ID.
+
+        const isAdmin = userRole === 'ADMIN';
+
+        if (!isAdmin && !isProjectManager && !isTaskCreator) {
             return res.status(403).json({
                 success: false,
-                message: 'Only the task creator or an admin can delete this task'
+                message: 'Access denied. You can only delete your own tasks or must be Project Manager.'
             });
         }
 
         await taskService.deleteTask(taskId);
 
-        // Emit real-time update
-        emitTaskDeleted(projectId, taskId);
+        emitTaskDeleted(task.project._id, taskId);
 
         return res.status(200).json({
             success: true,
-            message: 'Task and its comments deleted successfully'
+            message: 'Task deleted successfully'
         });
     } catch (error) {
         return res.status(500).json({

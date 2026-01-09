@@ -13,7 +13,7 @@ router.use(authenticate);
 router.post('/', requireAdmin, validate(createProjectSchema), projectController.createProject);
 router.get('/', loadUser, validate(getProjectsSchema, 'query'), projectController.getProjects);
 router.get('/:id', requireMember, projectController.getProject);
-router.patch('/:id', requireOwner, validate(updateProjectSchema), projectController.updateProject);
+router.patch('/:id', requireMember, validate(updateProjectSchema), projectController.updateProject);
 router.delete('/:id', requireOwner, projectController.deleteProject);
 
 // Member management (admin only)

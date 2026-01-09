@@ -77,14 +77,50 @@ const updateProject = async (req, res) => {
     try {
         const { name, description, status } = req.body;
         const updates = {};
+        const projectId = req.params.id;
+        const userId = req.user._id;
+        const userRole = req.user.role;
 
-        if (name) updates.name = name;
-        if (description !== undefined) updates.description = description;
-        if (status) updates.status = status;
+        // Get existing project to check owner
+        const existingProject = await projectService.getProjectById(projectId);
 
-        const project = await projectService.updateProject(req.params.id, updates);
+        if (!existingProject) {
+            return res.status(404).json({ success: false, message: 'Project not found' });
+        }
 
-        emitProjectUpdated(req.params.id, project);
+        const isOwner = existingProject.createdBy.equals(userId);
+        const isAdmin = userRole === 'ADMIN';
+
+        // 1. Handle Project Details Update (Title, Description)
+        if (name || description !== undefined) {
+            // Only Admin or Owner (Manager) can update details
+            if (!isOwner && !isAdmin) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Only Project Manager or Admin can update project details'
+                });
+            }
+            if (name) updates.name = name;
+            if (description !== undefined) updates.description = description;
+        }
+
+        // 2. Handle Status Update
+        if (status) {
+            // Any member can update status (Route is already protected by requireMember)
+            updates.status = status;
+        }
+
+        // If no updates were provided or allowed, return early
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No valid fields provided for update or insufficient permissions.'
+            });
+        }
+
+        const project = await projectService.updateProject(projectId, updates);
+
+        emitProjectUpdated(projectId, project);
 
         return res.status(200).json({
             success: true,
