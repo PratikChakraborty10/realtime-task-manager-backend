@@ -1,14 +1,45 @@
 const authService = require('../services/authService');
 const userService = require('../services/userService');
 
+const ALLOWED_GENDERS = ['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY'];
+
 const signup = async (req, res) => {
     try {
         const { name, gender, email, password } = req.body;
 
-        if (!email || !password) {
+        // Validate all required fields
+        if (!name || !name.trim()) {
             return res.status(400).json({
                 success: false,
-                message: 'Email and password are required'
+                message: 'Name is required'
+            });
+        }
+
+        if (!gender) {
+            return res.status(400).json({
+                success: false,
+                message: 'Gender is required'
+            });
+        }
+
+        if (!ALLOWED_GENDERS.includes(gender.toUpperCase())) {
+            return res.status(400).json({
+                success: false,
+                message: `Gender must be one of: ${ALLOWED_GENDERS.join(', ')}`
+            });
+        }
+
+        if (!email || !email.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email is required'
+            });
+        }
+
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password is required'
             });
         }
 
@@ -18,8 +49,8 @@ const signup = async (req, res) => {
         // Create user in MongoDB
         const user = await userService.createUser({
             idpUserId: supabaseUser.id,
-            name,
-            gender,
+            name: name.trim(),
+            gender: gender.toUpperCase(),
             email
         });
 

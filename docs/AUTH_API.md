@@ -22,7 +22,7 @@ Create a new user account.
 ```json
 {
   "name": "John Doe",
-  "gender": "male",
+  "gender": "MALE",
   "email": "john@example.com",
   "password": "SecurePass123!"
 }
@@ -30,8 +30,8 @@ Create a new user account.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `name` | string | No | Display name |
-| `gender` | string | No | Gender |
+| `name` | string | **Yes** | Display name |
+| `gender` | string | **Yes** | `MALE`, `FEMALE`, `OTHER`, `PREFER_NOT_TO_SAY` |
 | `email` | string | **Yes** | Email address |
 | `password` | string | **Yes** | Password (min 6 characters) |
 
@@ -46,7 +46,7 @@ Create a new user account.
     "id": "507f1f77bcf86cd799439011",
     "name": "John Doe",
     "email": "john@example.com",
-    "gender": "male",
+    "gender": "MALE",
     "role": "USER"
   }
 }
@@ -56,7 +56,7 @@ Create a new user account.
 ```json
 {
   "success": false,
-  "message": "Email and password are required"
+  "message": "Gender must be one of: MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY"
 }
 ```
 
