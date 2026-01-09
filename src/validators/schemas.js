@@ -42,6 +42,12 @@ const loginSchema = z.object({
     }).min(1, 'Password is required')
 });
 
+const lookupUserSchema = z.object({
+    email: z.string({
+        required_error: 'Email is required'
+    }).email('Invalid email format')
+});
+
 // ============ PROJECT SCHEMAS ============
 
 const createProjectSchema = z.object({
@@ -125,6 +131,7 @@ module.exports = {
     // User
     signupSchema,
     loginSchema,
+    lookupUserSchema,
     // Project
     createProjectSchema,
     updateProjectSchema,

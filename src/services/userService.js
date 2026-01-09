@@ -27,8 +27,17 @@ const getUserById = async (id) => {
     return User.findById(id);
 };
 
+/**
+ * Find user by email address
+ */
+const getUserByEmail = async (email) => {
+    return User.findOne({ email: email.toLowerCase() });
+};
+
 module.exports = {
     createUser,
     getUserByIdpId,
-    getUserById
+    getUserById,
+    getUserByEmail
 };
+

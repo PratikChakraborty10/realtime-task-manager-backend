@@ -109,8 +109,43 @@ const getProfile = async (req, res) => {
     }
 };
 
+/**
+ * GET /users/lookup
+ * Lookup user by email (for adding members)
+ */
+const lookupUser = async (req, res) => {
+    try {
+        const { email } = req.query;
+
+        const user = await userService.getUserByEmail(email);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     signup,
     login,
-    getProfile
+    getProfile,
+    lookupUser
 };
+
