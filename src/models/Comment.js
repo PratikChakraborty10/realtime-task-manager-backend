@@ -23,4 +23,7 @@ const commentSchema = new mongoose.Schema({
 // Index for pagination (oldest first)
 commentSchema.index({ task: 1, createdAt: 1 });
 
+// Text index for search
+commentSchema.index({ content: 'text' });
+
 module.exports = mongoose.model('Comment', commentSchema);

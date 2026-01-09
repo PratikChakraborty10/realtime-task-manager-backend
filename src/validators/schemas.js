@@ -95,6 +95,16 @@ const commentSchema = z.object({
     }).min(1, 'Comment content is required').trim()
 });
 
+// ============ SEARCH SCHEMAS ============
+
+const searchSchema = z.object({
+    q: z.string({
+        required_error: 'Search query is required'
+    }).min(1, 'Search query cannot be empty').trim(),
+
+    limit: z.string().optional().transform(val => val ? parseInt(val) : 10)
+});
+
 module.exports = {
     // Enums
     GenderEnum,
@@ -111,5 +121,8 @@ module.exports = {
     createTaskSchema,
     updateTaskSchema,
     // Comment
-    commentSchema
+    commentSchema,
+    // Search
+    searchSchema
 };
+

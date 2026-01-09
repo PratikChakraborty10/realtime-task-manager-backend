@@ -32,4 +32,7 @@ const projectSchema = new mongoose.Schema({
 projectSchema.index({ createdBy: 1, createdAt: -1 });
 projectSchema.index({ members: 1, createdAt: -1 });
 
+// Text index for search
+projectSchema.index({ name: 'text', description: 'text' });
+
 module.exports = mongoose.model('Project', projectSchema);

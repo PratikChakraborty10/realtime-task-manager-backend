@@ -18,11 +18,13 @@ app.use(morgan("tiny"));
 const userRoutes = require('./src/routes/user');
 const projectRoutes = require('./src/routes/project');
 const taskRoutes = require('./src/routes/task');
+const searchRoutes = require('./src/routes/search');
 
 // Use routes
 app.use('/api/v1', userRoutes);
 app.use('/api/v1/projects', projectRoutes);
 app.use('/api/v1', taskRoutes);
+app.use('/api/v1/search', searchRoutes);
 
 // Export app for use in index.js
 module.exports = app;
