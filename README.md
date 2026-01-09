@@ -104,6 +104,99 @@ src/
 | **Services** | Business logic, database operations |
 | **Models** | Mongoose schemas with soft delete middleware |
 
+### Service Interactions
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              Controller Layer                                 │
+│                                                                               │
+│  projectController ──────────────────────────────────────────────────────┐   │
+│        │                                                                 │   │
+│        ├── calls ──► projectService.createProject()                      │   │
+│        ├── calls ──► projectService.getProjectsByUser()                  │   │
+│        ├── calls ──► userService.getUserById() ◄── validates member      │   │
+│        └── emits ──► emitProjectUpdated() ──► Socket.IO                  │   │
+│                                                                               │
+│  taskController ─────────────────────────────────────────────────────────┐   │
+│        │                                                                 │   │
+│        ├── calls ──► taskService.createTask()                            │   │
+│        ├── calls ──► projectService.isProjectMember() ◄── authorization  │   │
+│        └── emits ──► emitTaskCreated() ──► Socket.IO                     │   │
+│                                                                               │
+│  searchController ───────────────────────────────────────────────────────┐   │
+│        │                                                                 │   │
+│        ├── calls ──► projectService.getProjectsByUser() ◄── scope       │   │
+│        ├── queries ► Project.find({ $text })                             │   │
+│        ├── queries ► Task.find({ $text, project: { $in: userProjects }}) │   │
+│        └── queries ► Comment.find({ $text })                             │   │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              Service Layer                                    │
+│                                                                               │
+│  ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐             │
+│  │  userService    │   │ projectService  │   │   taskService   │             │
+│  ├─────────────────┤   ├─────────────────┤   ├─────────────────┤             │
+│  │ createUser()    │   │ createProject() │   │ createTask()    │             │
+│  │ getUserById()   │   │ getProjectById()│   │ getTaskById()   │             │
+│  │ getUserByEmail()│◄──│ addMember()     │──►│ getTasksByProj()│             │
+│  └────────┬────────┘   │ isProjectMember │   └────────┬────────┘             │
+│           │            │ isProjectOwner  │            │                      │
+│           │            └────────┬────────┘            │                      │
+│           │                     │                     │                      │
+│           └──────────┬──────────┴──────────┬──────────┘                      │
+│                      │                     │                                  │
+│                      ▼                     ▼                                  │
+│              ┌─────────────────────────────────────────┐                     │
+│              │          commentService                 │                     │
+│              ├─────────────────────────────────────────┤                     │
+│              │ createComment() ◄── linked to Task      │                     │
+│              │ deleteComment() ◄── soft deletes        │                     │
+│              └─────────────────────────────────────────┘                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              Model Layer (Mongoose)                           │
+│                                                                               │
+│  ┌─────────┐      ┌─────────┐      ┌─────────┐      ┌─────────┐             │
+│  │  User   │◄────►│ Project │◄────►│  Task   │◄────►│ Comment │             │
+│  └─────────┘      └─────────┘      └─────────┘      └─────────┘             │
+│       │                │                │                │                   │
+│       └────────────────┴────────────────┴────────────────┘                   │
+│                                │                                              │
+│                    ┌───────────▼───────────┐                                 │
+│                    │   Soft Delete Hook    │                                 │
+│                    │ pre(/^find/) ──► where({ deletedAt: null })             │
+│                    └───────────────────────┘                                 │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Data Flow Example: Creating a Task
+
+```
+1. POST /projects/:projectId/tasks
+       │
+       ▼
+2. Route ──► authenticate ──► requireMember ──► validate ──► taskController
+       │
+       ▼
+3. taskController.createTask()
+       │
+       ├── projectService.isProjectMember(projectId, userId)  ✓
+       │
+       ├── taskService.createTask({ title, project, createdBy })
+       │       │
+       │       └── Task.create() ──► MongoDB
+       │
+       └── emitTaskCreated(projectId, task)
+               │
+               └── io.to(`project:${projectId}`).emit('task:created', { task })
+                       │
+                       └── All connected clients in room receive update
+```
+
 ---
 
 ## ⚡ Real-Time Updates
