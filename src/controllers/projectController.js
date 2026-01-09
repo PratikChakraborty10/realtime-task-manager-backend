@@ -1,5 +1,6 @@
 const projectService = require('../services/projectService');
 const userService = require('../services/userService');
+const { emitProjectUpdated, emitProjectMemberAdded, emitProjectMemberRemoved } = require('../socket/emitter');
 
 const createProject = async (req, res) => {
     try {
@@ -83,6 +84,8 @@ const updateProject = async (req, res) => {
 
         const project = await projectService.updateProject(req.params.id, updates);
 
+        emitProjectUpdated(req.params.id, project);
+
         return res.status(200).json({
             success: true,
             message: 'Project updated successfully',
@@ -136,6 +139,8 @@ const addMember = async (req, res) => {
 
         const project = await projectService.addMember(req.params.id, userId);
 
+        emitProjectMemberAdded(req.params.id, project, userToAdd);
+
         return res.status(200).json({
             success: true,
             message: 'Member added successfully',
@@ -163,6 +168,8 @@ const removeMember = async (req, res) => {
         }
 
         const updatedProject = await projectService.removeMember(req.params.id, userId);
+
+        emitProjectMemberRemoved(req.params.id, updatedProject, userId);
 
         return res.status(200).json({
             success: true,

@@ -26,11 +26,27 @@ const emitCommentDeleted = (taskId, commentId) => {
     getIO().to(`task:${taskId}`).emit('comment:deleted', { commentId });
 };
 
+// Project events - broadcast to project room
+const emitProjectUpdated = (projectId, project) => {
+    getIO().to(`project:${projectId}`).emit('project:updated', { project });
+};
+
+const emitProjectMemberAdded = (projectId, project, member) => {
+    getIO().to(`project:${projectId}`).emit('member:added', { project, member });
+};
+
+const emitProjectMemberRemoved = (projectId, project, memberId) => {
+    getIO().to(`project:${projectId}`).emit('member:removed', { project, memberId });
+};
+
 module.exports = {
     emitTaskCreated,
     emitTaskUpdated,
     emitTaskDeleted,
     emitCommentCreated,
     emitCommentUpdated,
-    emitCommentDeleted
+    emitCommentDeleted,
+    emitProjectUpdated,
+    emitProjectMemberAdded,
+    emitProjectMemberRemoved
 };
